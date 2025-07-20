@@ -8,6 +8,7 @@ The static cdn server for hosting user files on Whisp.
 git clone https://github.com/linuskang/whisp-cdn-server
 cd whisp-cdn-server
 npm install
+mkdir app/uploads
 cp .env.example .env # edit to your own values
 
 npm run dev # start dev server
