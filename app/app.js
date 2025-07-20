@@ -13,6 +13,21 @@ const env = process.env
 const app = express();
 const port = env.PORT || 3000;
 
+function requireApiKey(req, res, next) {
+  const userKey = req.headers["authorization"];
+  if (userKey === `Bearer ${env.API_KEY}`) {
+    return next();
+  }
+  return res.status(401).json({ error: "Unauthorized" });
+}
+
+app.get("/", (req, res) => {
+  res.json({ name: "Whisp CDN Server", version: "1.0.0", description: "CDN file hosting server for Whisp" });
+});
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.use((req, res, next) => {
     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     log.info(`req: ${ip} - ${req.method} ${req.url}`);
@@ -34,7 +49,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-app.post("/upload", upload.single("image"), (req, res) => {
+app.post("/upload", requireApiKey, upload.single("image"), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: "No image uploaded" });
   }
@@ -52,7 +67,7 @@ app.get("/images", (req, res) => {
   });
 });
 
-app.delete("/images/:filename", (req, res) => {
+app.delete("/images/:filename", requireApiKey, (req, res) => {
   const filePath = path.join(__dirname, "uploads", req.params.filename);
   fs.unlink(filePath, (err) => {
     if (err) {
@@ -62,7 +77,7 @@ app.delete("/images/:filename", (req, res) => {
   });
 });
 
-app.get("/", (req, res) => {
+app.get("/upload", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
