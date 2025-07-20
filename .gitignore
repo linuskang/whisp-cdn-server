@@ -1,0 +1,8 @@
+# dev
+/app/uploads
+
+# prod
+.env
+.env.local
+/node_modules
+server.log
